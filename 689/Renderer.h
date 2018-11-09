@@ -95,17 +95,18 @@ namespace vmr
 								Color c = Color(0, 0, 0, 0);
 								float d = 0;
 
-								if(isInBounds(currentPos, Vector(2.9,2.9,2.9),Vector(0,0,0)))
+								//if(isInBounds(currentPos, Vector(9,9,9),Vector(0,0,0)))
+								if(isInBounds(currentPos, Vector(2.5,2.5,2.5), Vector(-0.625, -0.55, .225)))
 								{
 									//d = mask(floatF, currentPos);
-									d = clamp(floatF,0,1,currentPos);
-									//d = floatF->eval(currentPos);
+									//d = clamp(floatF,0,1,currentPos);
+									d = floatF->eval(currentPos);
 									
 									//loop through lights
 									for (int m = 0; m < 1; m++)
 									{
 										float tL = 0;
-										Color lightColor = Color(1, 1, 1, 1);
+										Color lightColor = Color(0.7, 0.7, 0.7, 1);
 										Color lightColor2 = Color(0.5, 0.5, 0.5, 1);
 										//if (m == 1)
 										//	lightColor = Color(0.5, 0.5, 0.5, 1);
@@ -113,13 +114,13 @@ namespace vmr
 										if (d != 0)
 										{
 											//c = Color(1, 1, 1, 1);
-											//c += (lightColor * Color(0.7,0.7,0.7,1) * lightA[m]->eval(currentPos));
-											c += (lightColor * Color(1, 1, 1, 1) * lightCheck(currentPos, Vector(-1, -2, 2), floatF));
-											c += (lightColor2 * Color(1, 1, 1, 1) * lightCheck(currentPos, Vector(2, -2, 0), floatF));
+											//c += (lightColor * Color(1,1,1,1) * lightA[m]->eval(currentPos));
+											c += (lightColor * Color(0.7, 0.7, 0.7, 0.7) * lightCheck(currentPos, Vector(-4, -7, -6), floatF));
+											//c += (lightColor2 * Color(1, 1, 1, 1) * lightCheck(currentPos, Vector(2, -2, 0), floatF));
 										}
 					
 									}
-									deltaT = std::exp(-4 * deltaS1*d);
+									deltaT = std::exp(-20 * deltaS1*d);
 									L += c * (1 - deltaT)*T;
 									T *= deltaT;
 								}
@@ -131,7 +132,7 @@ namespace vmr
 							arr[start + 2] = L.Z();
 							arr[start + 3] = (1.0f - T);
 					}
-					//std::cout << "\nline: " << j;
+					std::cout << "\nline: " << j;
 				}
 				
 				exportImage(width1, height1, arr, fileName);
@@ -202,14 +203,14 @@ namespace vmr
 		Vector lightRay = (lightLoc - currentPoint).unitvector();
 		Vector currentPosL = currentPoint;
 		float dsm = 0;
-		float ds = 0.01;
+		float ds = 0.2;
 		int iter = (lightLoc - currentPoint).magnitude() / ds;
 		for (int k = 0; k < iter; k++)
 		{
 			currentPosL = currentPosL + (lightRay * ds);
 			dsm += mask(floatField, currentPosL) * ds;
 		}
-		tL = std::exp(-4 * dsm);
+		tL = std::exp(-15 * dsm);
 		return tL;
 	}
 

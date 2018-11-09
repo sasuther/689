@@ -86,5 +86,8 @@
     <ClInclude Include="PerlinNoise1.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="CPT.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

@@ -13,13 +13,12 @@ namespace vmr
 
 	void stampDensityGrid(Vector llc, Vector n,float step, FieldFloatPtr floatField, char * fileName)
 	{
-		std::ofstream myfile;
-		myfile.open(fileName);
-		myfile << llc.X() << " " << llc.Y() << " " << llc.Z() << "\n";
-		myfile << n.X() << " " << n.Y() << " " << n.Z() << "\n";
-		myfile << step << "\n";
+		FILE  * myfile = fopen(fileName, "wb");
+		fwrite(&llc, sizeof(llc), 1, myfile);
+		fwrite(&n, sizeof(n), 1, myfile);
+		fwrite(&step, sizeof(step), 1, myfile);		
 
-		int width = 50;
+		int width = n[0]/step;
 		float * arr = NULL;
 		int numPoints = width*width*width;
 		arr = new float[numPoints];
@@ -35,20 +34,56 @@ namespace vmr
 					Vector currentPoint = llc + Vector(i*step, j*step, k*step);
 					//calculate density at point
 					float d = floatField->eval(currentPoint);
-					//assign to grid
-					//myfile << d << " ";
 					int index = (i + width * (j + width * k));
 					arr[index] = d;
-					count++;
-					std::cout << "\n" << count;
+
 				}
 			}
 		}
-		for (int i = 0; i < numPoints; i++)
+
+		fwrite(arr, sizeof(*arr), width*width*width, myfile);
+		fclose(myfile);
+	}
+
+	void stampNoiseGrid(Vector llc, Vector n, float step, float * pArr, int size, char * fileName)
+	{
+		FILE  * myfile = fopen(fileName, "wb");
+		fwrite(&llc, sizeof(llc), 1, myfile);
+		fwrite(&n, sizeof(n), 1, myfile);
+		fwrite(&step, sizeof(step), 1, myfile);
+
+		int width = n[0] / step;
+		std::cout << width;
+		float * arr = NULL;
+		int numPoints = width*width*width;
+		arr = new float[numPoints];
+
+		for (int m = 0; m < size; m++)
 		{
-			myfile << arr[i] << " ";
+			Vector pos = Vector(pArr[m], pArr[m + 1], pArr[m + 2]);
+			//std::cout << "\n pos: " << pos[0] << " " << pos[1] << " " << pos[2];
+			NoiseStamp n = NoiseStamp(pos, pArr[m + 3]/10, 3.5, 1.5, 0.7, 1, 4, pArr[m + 4]/5);
+			
+			for (int k = 0; k < width; k++)
+			{
+				for (int j = 0; j < width; j++)
+				{
+#pragma omp parallel for 
+					for (int i = 0; i < width; i++)
+					{
+						Vector currentPoint = llc + Vector(i*step, j*step, k*step);
+						//calculate density at point
+						float d = n.eval(currentPoint);
+						int index = (i + width * (j + width * k));
+						arr[index] += d;
+
+					}
+				}
+			}
 		}
-		myfile.close();
+
+		fwrite(arr, sizeof(*arr), width*width*width, myfile);
+		fclose(myfile);
 	}
 
 	void stampWispGrid(Vector llc, Vector n, float step, Noise_t t1, Noise_t t2, Wisp w, char * fileName)
@@ -213,11 +248,17 @@ namespace vmr
 
 	void stampLightGrid(Vector llc, Vector n, float step, FieldFloatPtr floatField, Light light, char * fileName)
 	{
-		std::ofstream myfile;
+		/*std::ofstream myfile;
 		myfile.open(fileName);
 		myfile << llc.X() << " " << llc.Y() << " " << llc.Z() << "\n";
 		myfile << n.X() << " " << n.Y() << " " << n.Z() << "\n";
-		myfile << step << "\n";
+		myfile << step << "\n";*/
+
+		FILE  * myfile = fopen(fileName, "wb");
+		fwrite(&llc, sizeof(llc), 1, myfile);
+		fwrite(&n, sizeof(n), 1, myfile);
+		fwrite(&step, sizeof(step), 1, myfile);
+
 		float * arr = NULL;
 		int numPoints = (n.X() / step)*(n.Y() / step)*(n.Z() / step);
 		arr = new float[numPoints];
@@ -236,37 +277,48 @@ namespace vmr
 					Vector lightRay = (light.location() - currentPoint).unitvector();
 					Vector currentPosL = currentPoint;
 					float dsm = 0;
-					float ds = 0.01;
+					float ds = 0.1;
 					int iter = (light.location() - currentPoint).magnitude() / ds;
 					for (int k = 0; k < iter; k++)
 					{
 						currentPosL = currentPosL + (lightRay * ds);
 						dsm += mask(floatField, currentPosL) * ds;
 					}
-					tL = std::exp(-4 * dsm);
-					//assign to grid
-					//myfile << tL << " ";
+					tL = std::exp(-10 * dsm);
 					int index = (i + width * (j + width * k));
 					arr[index] = tL;
-					count++;
-					std::cout << "\n" << count;
 				}
 			}
 		}
-		for (int i = 0; i < numPoints; i++)
-		{
-			myfile << arr[i] << " ";
-		}
-		myfile.close();
+		fwrite(arr, sizeof(*arr), width*width*width, myfile);
+		fclose(myfile);
+
 	}
 
 	float * loadGrid(char * fileName)
 	{
-		std::ifstream file(fileName, std::ios::binary);
+		//std::ifstream file(fileName, std::ios::binary);
+		/*FILE * file = fopen(fileName, "rb");
+		float * arr = NULL;
+
+		float llcX,llcY,llcZ,nX,nY,nZ,step;
+		Vector llc, n;
+		fread(&llc, sizeof(llc), 1, file);
+		fread(&n, sizeof(n), 1, file);
+		fread(&step, sizeof(step), 1, file);
+		int numPoints = (n[0] / step)*(n[1] / step)*(n[2] / step);
+		arr = new float[numPoints];
+
+		fread(arr, sizeof(*arr), pow(n[0] / step,3), file);
+		fclose(file);
+
+		return arr;*/
+
+		std::ifstream file(fileName);
 		float * arr = NULL;
 		if (file.is_open())
 		{
-			float llcX,llcY,llcZ,nX,nY,nZ,step;
+			float llcX, llcY, llcZ, nX, nY, nZ, step;
 			file >> llcX;
 			file >> llcY;
 			file >> llcZ;
@@ -281,6 +333,21 @@ namespace vmr
 				file >> arr[i];
 			}
 		}
+		return arr;
+	}
+
+	float * loadParticles(char * fileName)
+	{
+		std::ifstream file(fileName);
+		float * arr = {NULL};
+		int num;
+		file >> num;
+		arr = new float[num*5];
+		for (int i = 0; i < (num * 5); i++)
+		{
+			file >> arr[i];
+		}
+
 		return arr;
 	}
 

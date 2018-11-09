@@ -93,7 +93,7 @@ namespace vmr
 
 	public:
 
-		FloatScale(Field<float> * field, float delta)
+		FloatScale(Field<float> * field, Vector delta)
 		{
 			f = field;
 			d = delta;
@@ -101,13 +101,13 @@ namespace vmr
 
 		const float eval(const Vector& P) const
 		{
-			return f->eval(P/d);
+			return f->eval(Vector(P[0] / d[0], P[1] / d[1], P[2] / d[2]));
 		}
 
 	private:
 
 		FieldFloatPtr f;
-		float d;
+		Vector d;
 
 	};
 

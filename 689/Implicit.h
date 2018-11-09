@@ -67,7 +67,7 @@ namespace vmr
 			if ((P - t.P).magnitude() < t.pscale + n)
 				return 1;
 			else
-				return 0;
+				return -3;
 
 		}
 
@@ -92,6 +92,18 @@ namespace vmr
 			t.roughness = roughness;
 			t.P = pos;
 			t.pscale = pscale;
+		}
+
+		NoiseStamp()
+		{
+			fad = 1;
+			t.frequency = 2.0;
+			t.fjump = 2.5;
+			t.octaves = 3;
+			t.amplitude = 1;
+			t.roughness = 0.5;
+			t.P = Vector(0,0,0);
+			t.pscale = 1;
 		}
 
 		const float eval(const Vector& P) const
@@ -139,7 +151,8 @@ namespace vmr
 		}
 		const Vector grad(const Vector& P) const
 		{
-			return Vector();
+			Vector x = P - cen;
+			return ((8 * pow(radMajor, 2) * n) - (4 / x.magnitude()*(pow(x.magnitude(), 2) + pow(radMajor, 2) - pow(radMinor, 2)) * x)).unitvector();
 		}
 
 	private:
@@ -217,7 +230,11 @@ namespace vmr
 		}
 		const Vector grad(const Vector& P) const
 		{
-			return Vector();
+			Vector AB = P - cen;
+			if (AB*n > 0)
+				return -n;
+			else
+				return n;
 		}
 
 	private:
