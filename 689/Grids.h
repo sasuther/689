@@ -18,7 +18,8 @@ namespace vmr
 		fwrite(&n, sizeof(n), 1, myfile);
 		fwrite(&step, sizeof(step), 1, myfile);		
 
-		int width = n[0]/step;
+		int width = ceil(n[0]/step);
+		std::cout << width;
 		float * arr = NULL;
 		int numPoints = width*width*width;
 		arr = new float[numPoints];
@@ -36,13 +37,57 @@ namespace vmr
 					float d = floatField->eval(currentPoint);
 					int index = (i + width * (j + width * k));
 					arr[index] = d;
-
+					std::cout << "\n" << count;
+					count++;
 				}
 			}
 		}
 
 		fwrite(arr, sizeof(*arr), width*width*width, myfile);
 		fclose(myfile);
+		std::cout << "\n file written";
+	}
+
+	void stampVectorGrid(Vector llc, Vector n, float step, FieldVectorPtr vectorField, char * fileName)
+	{
+		FILE  * myfile = fopen(fileName, "wb");
+		fwrite(&llc, sizeof(llc), 1, myfile);
+		fwrite(&n, sizeof(n), 1, myfile);
+		fwrite(&step, sizeof(step), 1, myfile);
+
+		int width = ceil(n[0] / step);
+		std::cout << width;
+		float * arr = NULL;
+		int numPoints = width * width*width*3;
+		arr = new float[numPoints];
+
+		int count = 0;
+		int w = width;
+		for (int k = 0; k < width; k++)
+		{
+			for (int j = 0; j < width; j++)
+			{
+#pragma omp parallel for 
+				for (int i = 0; i < width; i++)
+				{
+					Vector currentPoint = llc + Vector(i*step, j*step, k*step);
+					//calculate density at point
+					Vector d = vectorField->eval(currentPoint);
+					int index = i + (j * w) + (k * w * w) + (0 * w * w * w);
+					arr[index] = d[0];
+					index = i + (j * w) + (k * w * w) + (1 * w * w * w);
+					arr[index] = d[1];
+					index = i + (j * w) + (k * w * w) + (2 * w * w * w);
+					arr[index] = d[2];
+					std::cout << "\n" << count;
+					count++;
+				}
+			}
+		}
+
+		fwrite(arr, sizeof(*arr), width*width*width*3, myfile);
+		fclose(myfile);
+		std::cout << "\n file written";
 	}
 
 	void stampNoiseGrid(Vector llc, Vector n, float step, float * pArr, int size, char * fileName)
@@ -298,7 +343,7 @@ namespace vmr
 	float * loadGrid(char * fileName)
 	{
 		//std::ifstream file(fileName, std::ios::binary);
-		/*FILE * file = fopen(fileName, "rb");
+		FILE * file = fopen(fileName, "rb");
 		float * arr = NULL;
 
 		float llcX,llcY,llcZ,nX,nY,nZ,step;
@@ -312,9 +357,9 @@ namespace vmr
 		fread(arr, sizeof(*arr), pow(n[0] / step,3), file);
 		fclose(file);
 
-		return arr;*/
+		return arr;
 
-		std::ifstream file(fileName);
+		/*std::ifstream file(fileName);
 		float * arr = NULL;
 		if (file.is_open())
 		{
@@ -332,7 +377,26 @@ namespace vmr
 			{
 				file >> arr[i];
 			}
-		}
+		}*/
+		return arr;
+	}
+
+	float * loadVectorGrid(char * fileName)
+	{
+		//std::ifstream file(fileName, std::ios::binary);
+		FILE * file = fopen(fileName, "rb");
+		float * arr = NULL;
+
+		float llcX, llcY, llcZ, nX, nY, nZ, step;
+		Vector llc, n;
+		fread(&llc, sizeof(llc), 1, file);
+		fread(&n, sizeof(n), 1, file);
+		fread(&step, sizeof(step), 1, file);
+		int numPoints = (n[0] / step)*(n[1] / step)*(n[2] / step)*3;
+		arr = new float[numPoints];
+
+		fread(arr, sizeof(*arr), pow(n[0] / step, 3), file);
+		fclose(file);
 		return arr;
 	}
 

@@ -95,12 +95,11 @@ namespace vmr
 								Color c = Color(0, 0, 0, 0);
 								float d = 0;
 
-								//if(isInBounds(currentPos, Vector(9,9,9),Vector(0,0,0)))
-								if(isInBounds(currentPos, Vector(2.5,2.5,2.5), Vector(-0.625, -0.55, .225)))
+								if(isInBounds(currentPos, Vector(2,2,2), Vector(0, 0, 0)))
 								{
-									//d = mask(floatF, currentPos);
+									d = mask(floatF, currentPos);
 									//d = clamp(floatF,0,1,currentPos);
-									d = floatF->eval(currentPos);
+									//d = floatF->eval(currentPos);
 									
 									//loop through lights
 									for (int m = 0; m < 1; m++)
@@ -113,9 +112,9 @@ namespace vmr
 
 										if (d != 0)
 										{
-											//c = Color(1, 1, 1, 1);
+											c = Color(1, 1, 1, 1);
 											//c += (lightColor * Color(1,1,1,1) * lightA[m]->eval(currentPos));
-											c += (lightColor * Color(0.7, 0.7, 0.7, 0.7) * lightCheck(currentPos, Vector(-4, -7, -6), floatF));
+											//c += (lightColor * Color(0.7, 0.7, 0.7, 0.7) * lightCheck(currentPos, Vector(-2, -2, 2), floatF));
 											//c += (lightColor2 * Color(1, 1, 1, 1) * lightCheck(currentPos, Vector(2, -2, 0), floatF));
 										}
 					
@@ -203,7 +202,7 @@ namespace vmr
 		Vector lightRay = (lightLoc - currentPoint).unitvector();
 		Vector currentPosL = currentPoint;
 		float dsm = 0;
-		float ds = 0.2;
+		float ds = 0.1;
 		int iter = (lightLoc - currentPoint).magnitude() / ds;
 		for (int k = 0; k < iter; k++)
 		{

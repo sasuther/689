@@ -77,6 +77,32 @@ namespace vmr
 
 	};
 
+	class CutoutVec : public Field<Vector>
+	{
+
+	public:
+
+		CutoutVec(Field<Vector> * v1, Field<float> * g1)
+		{
+			v = v1;
+			g = g1;
+		}
+
+		const Vector eval(const Vector& P) const
+		{
+			if (g->eval(P) > 0)
+				return v->eval(P);
+			else
+				return Vector(0, 0, 0);
+		}
+
+	private:
+
+		FieldVectorPtr v;
+		FieldFloatPtr g;
+
+	};
+
 	class Shell : public Field<float>
 	{
 

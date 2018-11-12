@@ -166,6 +166,7 @@
     <ClInclude Include="Field.h" />
     <ClInclude Include="FSPN.h" />
     <ClInclude Include="Grids.h" />
+    <ClInclude Include="OBJ2.h" />
     <ClInclude Include="PerlinNoise1.h" />
     <ClInclude Include="Implicit.h" />
     <ClInclude Include="LinearAlgebra.h" />

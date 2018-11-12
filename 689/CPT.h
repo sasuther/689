@@ -90,6 +90,27 @@ namespace vmr
 		FieldFloatPtr f;
 	};
 
+	class CPTLevel : public Field<Vector>
+	{
+
+	public:
+
+		CPTLevel(Field<float> * f1,Field<Vector> * g1)
+		{
+			f = f1;
+			g = g1;
+		}
+
+		const Vector eval(const Vector& P) const
+		{
+			return (P - (f->eval(P)*g->eval(P).unitvector()));
+		}
+
+	private:
+		FieldFloatPtr f;
+		FieldVectorPtr g;
+	};
+
 	class NPTImplicit : public Field<Vector>
 	{
 
@@ -157,6 +178,29 @@ namespace vmr
 
 	private:
 		FieldFloatPtr f;
+		FieldVectorPtr v;
+	};
+
+	class Cloud : public Field<float>
+	{
+
+	public:
+
+		Cloud(Field<float> * f1, Field<float> * noise, Field<Vector> * CPT)
+		{
+			f = f1;
+			n = noise;
+			v = CPT;
+		}
+
+		const float eval(const Vector& P) const
+		{
+			return f->eval(P) + (n->eval(P)*v->eval(P)).magnitude();
+		}
+
+	private:
+		FieldFloatPtr f;
+		FieldFloatPtr n;
 		FieldVectorPtr v;
 	};
 
