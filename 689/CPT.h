@@ -195,8 +195,11 @@ namespace vmr
 
 		const float eval(const Vector& P) const
 		{
-			return f->eval(P) + (n->eval(P)*v->eval(P)).magnitude();
+			Vector tmp = v->eval(P);
+			float tmp2 = n->eval(tmp);
+			return f->eval(P) + abs(tmp2);
 		}
+
 
 	private:
 		FieldFloatPtr f;
